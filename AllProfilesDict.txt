@@ -1,0 +1,46 @@
+from bs4 import BeautifulSoup
+from urllib.request import urlopen
+import re
+
+base_url = "http://olympus.realpython.org"
+html_page = urlopen(base_url + "/profiles")
+html_text = html_page.read().decode("utf-8")
+soup = BeautifulSoup(html_text, "html.parser")
+
+def is_word_in_text(word, text):
+
+    pattern = r'(^|[^\w]){}([^\w]|$)'.format(word)
+    pattern = re.compile(pattern, re.IGNORECASE)
+    matches = re.search(pattern, text)
+    return bool(matches)
+
+for link in soup.find_all("a"):
+    link_url = base_url + link["href"]
+    tekst_page = urlopen(link_url).read().decode("utf-8")
+
+    list_key = []
+    list_value = []
+
+    key = re.findall(".*:", tekst_page, re.IGNORECASE)
+    value = re.findall(":.*", tekst_page, re.IGNORECASE)
+
+    for i in key:
+        if is_word_in_text("title",i):
+            continue
+        word = re.sub("<.*?>", "",i)
+        word = re.sub(":","",word)
+        list_key.append(word)
+
+    for i in value:
+        if is_word_in_text("title",i):
+            continue
+        word = re.sub("<.*?>", "",i)
+        word = re.sub(":","",word)
+        list_value.append(word)
+
+    dict = {list_key[i]: list_value[i] for i in range(len(list_key))}
+
+    print(dict)
+
+
+
